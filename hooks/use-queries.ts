@@ -14,7 +14,9 @@ import {
   ProductionLog,
   Alert,
   Recommendation,
-  recommendationsAPI
+  recommendationsAPI,
+  dispatchingAPI,
+  HungarianResponse
 } from '@/lib/api'
 
 // Dashboard queries
@@ -296,6 +298,17 @@ export const useRecommendationsByCategory = (category: string) => {
     },
     enabled: !!category,
     staleTime: 10 * 60 * 1000,
+  })
+}
+
+export const useHungarianOptimization = () => {
+  return useQuery({
+    queryKey: ['dispatching', 'hungarian'],
+    queryFn: async () => {
+      const response = await dispatchingAPI.optimizeHungarian()
+      return response.data
+    },
+    staleTime: 5 * 60 * 1000,
   })
 }
 

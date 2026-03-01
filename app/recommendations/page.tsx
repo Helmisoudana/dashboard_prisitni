@@ -2,144 +2,209 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import AppLayout from '@/components/layout/app-layout'
-import { useRecommendations } from '@/hooks/use-queries'
+import { useHungarianOptimization } from '@/hooks/use-queries'
 import LoadingState from '@/components/shared/loading-state'
 import ErrorState from '@/components/shared/error-state'
 import EmptyState from '@/components/shared/empty-state'
-import { Lightbulb, ArrowRight, DollarSign, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Lightbulb, ArrowRight, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, Zap, User, Monitor, Clock, RefreshCw } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function RecommendationsPage() {
-  const { data: recommendations, isLoading, isError, refetch } = useRecommendations()
+  const { data: optimizationData, isLoading, isError, refetch, isRefetching } = useHungarianOptimization()
+  const [hasStarted, setHasStarted] = useState(false)
 
-  if (isLoading) return <LoadingState message="Loading AI recommendations..." />
-  if (isError) return <ErrorState onRetry={() => refetch()} />
-  if (!recommendations || recommendations.length === 0) {
-    return (
-      <AppLayout>
-        <EmptyState title="No Recommendations" message="All systems are running optimally!" icon={<CheckCircle2 className="w-16 h-16 text-success" />} />
-      </AppLayout>
-    )
+  const handleStartOptimization = () => {
+    setHasStarted(true)
+    refetch()
   }
-
-  const priorityColors: Record<string, string> = {
-    critical: 'bg-destructive/20 text-destructive border-destructive/30',
-    high: 'bg-warning/20 text-warning border-warning/30',
-    medium: 'bg-info/20 text-info border-info/30',
-    low: 'bg-primary/20 text-primary border-primary/30',
-  }
-
-  const categoryIcons: Record<string, React.ReactNode> = {
-    maintenance: <TrendingUp className="w-6 h-6" />,
-    efficiency: <Lightbulb className="w-6 h-6" />,
-    safety: <AlertTriangle className="w-6 h-6" />,
-    cost: <DollarSign className="w-6 h-6" />,
-  }
-
-  const groupedRecommendations = recommendations.reduce((acc, rec) => {
-    if (!acc[rec.category]) {
-      acc[rec.category] = []
-    }
-    acc[rec.category].push(rec)
-    return acc
-  }, {} as Record<string, typeof recommendations>)
 
   return (
     <AppLayout>
       <motion.div
-        className="space-y-8"
+        className="min-h-[70vh] flex flex-col"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Page Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-3xl font-bold text-foreground">AI Recommendations</h1>
-          <p className="text-muted-foreground mt-2">Data-driven insights to optimize factory operations</p>
-        </motion.div>
+        <AnimatePresence mode="wait">
+          {!hasStarted && !optimizationData ? (
+            <motion.div
+              key="start-screen"
+              className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <div className="relative">
+                <motion.div
+                  className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <div className="relative bg-card border border-primary/20 p-8 rounded-full shadow-2xl">
+                  <Zap className="w-16 h-16 text-primary fill-primary/10" />
+                </div>
+              </div>
 
-        {/* Recommendations by Category */}
-        <div className="space-y-8">
-          <AnimatePresence mode="wait">
-            {Object.entries(groupedRecommendations).map(([category, recs], categoryIdx) => (
-              <motion.div
-                key={category}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: categoryIdx * 0.1 }}
+              <div className="max-w-md mx-auto">
+                <h1 className="text-4xl font-bold text-foreground mb-4">Production Optimization</h1>
+                <p className="text-muted-foreground text-lg">
+                  Run the Hungarian Algorithm to find the most efficient assignments for your employees and machines.
+                </p>
+              </div>
+
+              <motion.button
+                onClick={handleStartOptimization}
+                className="group relative px-12 py-5 bg-primary text-primary-foreground rounded-full font-bold text-xl shadow-2xl shadow-primary/40 hover:shadow-primary/60 transition-all overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  {categoryIcons[category] && (
-                    <div className="w-10 h-10 bg-primary/20 text-primary rounded-lg flex items-center justify-center">
-                      {categoryIcons[category]}
-                    </div>
-                  )}
-                  <h2 className="text-xl font-semibold text-foreground capitalize">{category}</h2>
-                  <span className="text-sm text-muted-foreground ml-auto">{recs.length} recommendations</span>
+                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="relative flex items-center gap-3">
+                  <Zap className="w-6 h-6 fill-current" />
+                  Optimiser la Production
+                </span>
+              </motion.button>
+            </motion.div>
+          ) : isLoading || (isRefetching && !optimizationData) ? (
+            <motion.div
+              key="loading-screen"
+              className="flex-1 flex flex-col items-center justify-center space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="relative w-24 h-24">
+                <motion.div
+                  className="absolute inset-0 border-4 border-primary/20 rounded-full"
+                />
+                <motion.div
+                  className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+                <Zap className="absolute inset-0 m-auto w-10 h-10 text-primary animate-pulse" />
+              </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold animate-pulse">Calcul de l'optimum...</h2>
+                <p className="text-muted-foreground">Algorithme de Kuhn-Munkres en cours</p>
+              </div>
+            </motion.div>
+          ) : isError ? (
+            <motion.div
+              key="error-screen"
+              className="flex-1 flex flex-col items-center justify-center pt-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <ErrorState onRetry={() => refetch()} />
+            </motion.div>
+          ) : optimizationData ? (
+            <motion.div
+              key="results-screen"
+              className="space-y-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {/* Header with Recalculate */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-3xl font-bold">Optimization Results</h1>
+                  <p className="text-muted-foreground">Hungarian Algorithm assignments</p>
+                </div>
+                <motion.button
+                  onClick={() => refetch()}
+                  className="flex items-center gap-2 px-6 py-2 bg-secondary border border-border rounded-full text-sm font-bold hover:bg-secondary/80 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+                  Recalculate
+                </motion.button>
+              </div>
+
+              {/* Stats Card */}
+              <div className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <TrendingUp className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold font-mono">Algorithm: Hungarian</h2>
+                    <p className="text-muted-foreground">Priority: <span className="text-primary font-semibold">{optimizationData.priority}</span></p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <AnimatePresence mode="wait">
-                    {recs.map((rec, idx) => (
-                      <motion.div
-                        key={rec.id}
-                        className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ delay: idx * 0.05 }}
-                        whileHover={{ y: -4 }}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border capitalize ${
-                              priorityColors[rec.priority] || 'bg-muted/20 text-muted-foreground border-muted/30'
-                            }`}
-                          >
-                            {rec.priority} Priority
-                          </span>
-                        </div>
-
-                        <h3 className="text-base font-semibold text-foreground mb-2">
-                          {rec.description.split('\n')[0]}
-                        </h3>
-
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                          {rec.description}
-                        </p>
-
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <TrendingUp className="w-4 h-4" />
-                            <span>{rec.impact}</span>
-                          </div>
-                          {rec.estimated_savings && (
-                            <div className="flex items-center gap-2 text-sm text-success">
-                              <DollarSign className="w-4 h-4" />
-                              <span>Potential savings: {rec.estimated_savings}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <motion.button
-                          className="w-full px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Learn More
-                          <ArrowRight className="w-4 h-4" />
-                        </motion.button>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-background/40 p-4 rounded-xl border border-border flex items-center gap-4 transition-colors hover:border-primary/40"
+                  >
+                    <User className="w-8 h-8 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-tighter font-semibold">Assigned Employees</p>
+                      <p className="text-3xl font-bold">{optimizationData.diagnostics.assigned_employees}</p>
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-background/40 p-4 rounded-xl border border-border flex items-center gap-4 transition-colors hover:border-primary/40"
+                  >
+                    <Clock className="w-8 h-8 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-tighter font-semibold">Total Efficiency Time</p>
+                      <p className="text-3xl font-bold text-success">{optimizationData.diagnostics.total_time_min.toLocaleString(undefined, { maximumFractionDigits: 2 })} <span className="text-sm font-normal text-muted-foreground">min</span></p>
+                    </div>
+                  </motion.div>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+              </div>
+
+              {/* Assignment Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {optimizationData.assignments.map((assignment, idx) => (
+                  <motion.div
+                    key={`${assignment.employee_id}-${assignment.machine_id}-${idx}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.01 }}
+                    whileHover={{ y: -5 }}
+                    className="bg-card border border-border p-5 rounded-2xl hover:border-primary/40 transition-all hover:shadow-lg relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 transition-colors group-hover:bg-primary/10" />
+
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <User className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="font-bold text-lg">{assignment.employee_id}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Monitor className="w-3 h-3" />
+                        <span className="text-xs font-mono">{assignment.machine_id}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 relative z-10">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Product</p>
+                        <p className="text-sm font-medium text-foreground truncate">{assignment.product.replace(/_/g, ' ')}</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/50 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground italic">Est. time</span>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-primary" />
+                          <span className="font-mono font-bold text-primary">{assignment.avg_time_min} <small>min</small></span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </motion.div>
     </AppLayout>
   )

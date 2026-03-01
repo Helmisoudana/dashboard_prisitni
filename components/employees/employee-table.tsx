@@ -6,13 +6,21 @@ import { motion, AnimatePresence } from 'framer-motion'
 import LoadingState from '@/components/shared/loading-state'
 import ErrorState from '@/components/shared/error-state'
 import EmptyState from '@/components/shared/empty-state'
-import { Calendar, Clock, Award, Users, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Award, Users, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { format } from 'date-fns'
+import { EmployeeDetailsDialog } from './employee-details-dialog'
 
 export default function EmployeeTable() {
   const [page, setPage] = useState(0)
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const limit = 10
   const skip = page * limit
+
+  const handleRowClick = (id: string) => {
+    setSelectedEmployeeId(id)
+    setDetailsOpen(true)
+  }
 
   const { data, isLoading, isError, refetch } = useEmployees(skip, limit)
 
@@ -65,16 +73,22 @@ export default function EmployeeTable() {
                 {employeeList.map((employee, index) => (
                   <motion.tr
                     key={employee.employee_id}
-                    className="border-b border-border hover:bg-secondary/50 transition-colors"
+                    className="border-b border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
+                    onClick={() => handleRowClick(employee.employee_id)}
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.05 }}
                   >
                     <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{employee.prenom} {employee.nom}</p>
-                        <p className="text-xs text-muted-foreground">{employee.employee_id}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Eye className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{employee.prenom} {employee.nom}</p>
+                          <p className="text-xs text-muted-foreground">{employee.employee_id}</p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -150,6 +164,12 @@ export default function EmployeeTable() {
           </motion.button>
         </div>
       </div>
+
+      <EmployeeDetailsDialog
+        employeeId={selectedEmployeeId}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
     </div>
   )
 }

@@ -117,6 +117,7 @@ export const employeesAPI = {
   getAll: (page: number = 1, limit: number = 20) =>
     api.get<Employee[] | { data: Employee[]; total: number }>(`/employees?page=${page}&limit=${limit}`),
   getById: (id: string) => api.get<Employee>(`/employees/${id}`),
+  getByIdQuery: (id: string) => api.get<{ status: number; data: Employee[]; pagination?: any }>(`/employees?employee_id==${id}`),
   create: (employee: Employee) => api.post('/employees', employee),
   update: (id: string, employee: Employee) => api.put(`/employees/${id}`, employee),
   delete: (id: string) => api.delete(`/employees/${id}`),
@@ -226,6 +227,27 @@ export const chatAPI = {
 export const recommendationsAPI = {
   getAll: () => api.get<Recommendation[]>('/recommendations'),
   getByCategory: (category: string) => api.get<Recommendation[]>(`/recommendations/category/${category}`),
+}
+
+export interface HungarianAssignment {
+  employee_id: string
+  machine_id: string
+  product: string
+  avg_time_min: number
+}
+
+export interface HungarianResponse {
+  algorithm: string
+  priority: string
+  diagnostics: {
+    assigned_employees: number
+    total_time_min: number
+  }
+  assignments: HungarianAssignment[]
+}
+
+export const dispatchingAPI = {
+  optimizeHungarian: () => api.get<HungarianResponse>('/api/dispatching/hungarian'),
 }
 
 // Error handler
