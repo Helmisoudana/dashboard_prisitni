@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRISTINI - Smart Factory Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#1e1e2e;--accent:#6c5ce7;--accent2:#00cec9;--accent3:#fd79a8;--text:#e8e8f0;--muted:#6b6b80;--gold:#ffd700;--red:#ff4757;--green:#2ed573}
+html{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{overflow-x:hidden}
+.slide{min-height:100vh;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;position:relative;padding:60px 80px;overflow:hidden}
+.slide-inner{max-width:1200px;width:100%;z-index:2;position:relative}
+h1{font-size:4.5rem;font-weight:900;line-height:1.05;letter-spacing:-2px}
+h2{font-size:3rem;font-weight:800;line-height:1.1;letter-spacing:-1px}
+h3{font-size:1.6rem;font-weight:600;color:var(--muted)}
+.gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gradient-text-warm{background:linear-gradient(135deg,var(--accent3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tag{display:inline-block;padding:6px 16px;border-radius:20px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px}
+.tag-accent{background:rgba(108,92,231,.15);color:var(--accent);border:1px solid rgba(108,92,231,.3)}
+.tag-green{background:rgba(46,213,115,.1);color:var(--green);border:1px solid rgba(46,213,115,.3)}
+.tag-red{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.3)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;margin-top:40px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;margin-top:40px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;transition:all .3s ease}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.stat{font-size:3.5rem;font-weight:900;line-height:1}
+.stat-sm{font-size:2rem;font-weight:800}
+.label{font-size:.85rem;color:var(--muted);margin-top:8px;font-weight:500}
+.mono{font-family:'JetBrains Mono',monospace}
+.glow-orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.15;pointer-events:none}
+.slide-num{position:absolute;bottom:30px;right:40px;font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:2px}
+.progress-dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:8px}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.3;transition:all .3s;cursor:pointer}
+.progress-dots .dot.active{opacity:1;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.flow-line{width:2px;height:40px;background:linear-gradient(to bottom,var(--accent),transparent);margin:0 auto}
+.icon-box{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px}
+.appear{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.appear.visible{opacity:1;transform:translateY(0)}
+.team-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:8px 20px 8px 8px;font-size:.85rem;font-weight:500}
+.team-badge .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.metric-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:12px}
+.metric-bar-fill{height:100%;border-radius:4px;transition:width 1.5s ease}
+.timeline-item{display:flex;gap:20px;padding:16px 0;border-left:2px solid var(--border);padding-left:24px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:-6px;top:22px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.comparison-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:30px}
+.comparison-table th{padding:14px 20px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+.comparison-table td{padding:14px 20px;border-bottom:1px solid var(--border);font-size:.95rem}
+.comparison-table tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:4px 12px;border-radius:12px;font-size:.75rem;font-weight:600}
+.tech-stack-item{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.85rem;font-weight:500}
+.divider{width:60px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin:20px 0}
+.source{font-size:.65rem;color:var(--muted);opacity:.6;margin-top:16px;font-style:italic;line-height:1.5}
+</style>
+</head>
+<body>
+<!-- NAV DOTS -->
+<div class="progress-dots" id="navDots"></div>
+
+<!-- SLIDE 0: TITLE -->
+<div class="slide" id="s0">
+  <div class="glow-orb" style="width:600px;height:600px;background:var(--accent);top:-200px;right:-100px"></div>
+  <div class="glow-orb" style="width:400px;height:400px;background:var(--accent2);bottom:-100px;left:-50px"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear">
+      <div class="tag tag-accent" style="margin-bottom:24px">HACKATHON 2025</div>
+    </div>
+    <h1 class="appear" style="font-size:5.5rem;margin-bottom:16px">
+      <span class="gradient-text">PRISTINI</span>
+    </h1>
+    <h2 class="appear" style="font-size:2rem;font-weight:400;color:var(--muted);margin-bottom:40px">
+      AI-Powered Smart Factory Intelligence Platform
+    </h2>
+    <div class="divider appear" style="margin:0 auto 30px"></div>
+    <p class="appear" style="font-size:1.15rem;color:var(--muted);max-width:700px;margin:0 auto 30px;line-height:1.7">
+      160,000 workers. 1,600 companies. &euro;2.36 billion in EU exports.<br>
+      Tunisia&rsquo;s textile sector is a powerhouse &mdash; still running on spreadsheets.
+    </p>
+    <div class="grid-3 appear" style="max-width:700px;margin:0 auto 30px">
+      <div class="card" style="text-align:center;padding:18px 12px">
+        <div class="stat-sm gradient-text">10th</div>
+        <div class="label">EU clothing supplier</div>
+      </div>
+      <div class="card" style="text-align:center;padding:18px 12px">
+        <div class="stat-sm gradient-text-warm">20%</div>
+        <div class="label">of national exports</div>
+      </div>
+      <div class="card" style="text-align:center;padding:18px 12px">
+        <div class="stat-sm" style="color:var(--green)">85%</div>
+        <div class="label">fully export-oriented</div>
+      </div>
+    </div>
+    <div class="appear" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <div class="team-badge"><div class="avatar"></div>Hayder Tastouri</div>
+    </div>
+    <div class="appear source" style="text-align:center">Sources: FIPA Tunisia 2025 &bull; Kohan Textile Journal 2025 &bull; Tunisian Ministry of Economy 2025</div>
+  </div>
+  <div class="slide-num">00 / 14</div>
+</div>
+
+<!-- SLIDE 1: THE CRISIS -->
+<div class="slide" id="s1">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--red);top:50%;left:-150px;transform:translateY(-50%)"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-red">The Problem</span></div>
+    <h2 class="appear" style="margin-top:20px">A &euro;2.36B industry, flying <span style="color:var(--red)">blind.</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.1rem;margin-top:16px;max-width:640px;line-height:1.7">
+      Tunisia is the EU&rsquo;s 10th largest clothing supplier &mdash; ahead of the UK, Sri Lanka, and Egypt. Exports grew even as EU imports fell 16%. But on the factory floor, 160,000 workers across 3 daily shifts are still managed with Excel and WhatsApp.
+    </p>
+    <div class="grid-3 appear">
+      <div class="card" style="border-color:rgba(255,71,87,.2)">
+        <div class="stat" style="color:var(--red)">30%</div>
+        <div class="label">Productivity lost &mdash; in a sector where 85% of companies are fully export-oriented</div>
+        <div class="metric-bar"><div class="metric-bar-fill" style="width:30%;background:var(--red)"></div></div>
+      </div>
+      <div class="card" style="border-color:rgba(255,71,87,.2)">
+        <div class="stat" style="color:var(--red)">&euro;5,250</div>
+        <div class="label">Annual wage per production operative &mdash; lowest in the Mediterranean. Every % matters.</div>
+        <div class="metric-bar"><div class="metric-bar-fill" style="width:20%;background:var(--red)"></div></div>
+      </div>
+      <div class="card" style="border-color:rgba(255,71,87,.2)">
+        <div class="stat" style="color:var(--red)">$50K</div>
+        <div class="label">Cost per undetected machine incident &mdash; found days later in quality audits</div>
+        <div class="metric-bar"><div class="metric-bar-fill" style="width:45%;background:var(--red)"></div></div>
+      </div>
+    </div>
+    <div class="appear source">Sources: Kohan Textile Journal, Oct 2025 &bull; FIPA Tunisia &bull; fDi Benchmark / Financial Times 2025 &bull; Tunisian Ministry of Economy, May 2025</div>
+  </div>
+  <div class="slide-num">01 / 14</div>
+</div>
+
+<!-- SLIDE 2: THE VISION -->
+<div class="slide" id="s2">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--accent);bottom:-150px;right:-100px"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear"><span class="tag tag-accent">Our Vision</span></div>
+    <h2 class="appear" style="margin-top:20px;font-size:3.2rem">
+      What if your factory <span class="gradient-text">thought for itself?</span>
+    </h2>
+    <p class="appear" style="color:var(--muted);font-size:1.1rem;margin-top:20px;max-width:700px;margin-left:auto;margin-right:auto;line-height:1.7">
+      PRISTINI is an end-to-end intelligence layer that sits on top of your existing factory floor. It watches every task, predicts failures before they happen, optimizes every assignment, and lets managers ask questions in plain language.
+    </p>
+    <div class="grid-4 appear" style="margin-top:50px">
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="icon-box" style="background:rgba(108,92,231,.15);margin:0 auto 12px"><span style="color:var(--accent)">&#x1F50D;</span></div>
+        <div style="font-weight:700;font-size:.95rem">Detect</div>
+        <div class="label">Real-time anomaly detection on every task</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="icon-box" style="background:rgba(0,206,201,.15);margin:0 auto 12px"><span style="color:var(--accent2)">&#x1F4C8;</span></div>
+        <div style="font-weight:700;font-size:.95rem">Predict</div>
+        <div class="label">Forecast rendement &amp; fatigue trends</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="icon-box" style="background:rgba(253,121,168,.15);margin:0 auto 12px"><span style="color:var(--accent3)">&#x26A1;</span></div>
+        <div style="font-weight:700;font-size:.95rem">Optimize</div>
+        <div class="label">Hungarian algorithm dispatching</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="icon-box" style="background:rgba(255,215,0,.15);margin:0 auto 12px"><span style="color:var(--gold)">&#x1F916;</span></div>
+        <div style="font-weight:700;font-size:.95rem">Converse</div>
+        <div class="label">AI assistant with MCP tool use</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">02 / 14</div>
+</div>
+
+<!-- SLIDE 3: ARCHITECTURE -->
+<div class="slide" id="s3">
+  <div class="glow-orb" style="width:400px;height:400px;background:var(--accent2);top:-100px;left:30%"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-accent">Architecture</span></div>
+    <h2 class="appear" style="margin-top:20px">Full-Stack <span class="gradient-text">Production-Grade</span></h2>
+    <div class="grid-2 appear">
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <h3 style="font-size:1rem;color:var(--accent);margin-bottom:16px">BACKEND</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <div class="tech-stack-item">FastAPI</div>
+            <div class="tech-stack-item">SQLModel</div>
+            <div class="tech-stack-item">MySQL</div>
+            <div class="tech-stack-item">scikit-learn</div>
+            <div class="tech-stack-item">SciPy</div>
+            <div class="tech-stack-item">APScheduler</div>
+            <div class="tech-stack-item">Claude AI</div>
+            <div class="tech-stack-item">MCP Protocol</div>
+            <div class="tech-stack-item">AWS Bedrock</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:1rem;color:var(--accent2);margin-bottom:16px">FRONTEND</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <div class="tech-stack-item">Next.js 16</div>
+            <div class="tech-stack-item">React 19</div>
+            <div class="tech-stack-item">TypeScript</div>
+            <div class="tech-stack-item">TanStack Query</div>
+            <div class="tech-stack-item">Radix UI</div>
+            <div class="tech-stack-item">Tailwind v4</div>
+            <div class="tech-stack-item">Recharts</div>
+            <div class="tech-stack-item">Framer Motion</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(0,206,201,.08));font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:2;color:var(--muted)">
+        <div style="color:var(--accent);font-weight:600;margin-bottom:8px">// Data Flow</div>
+        <div><span style="color:var(--text)">RFID Scan</span> &rarr; POST /production-logs</div>
+        <div>&nbsp;&nbsp;&boxvr;&nbsp;Isolation Forest &rarr; <span style="color:var(--red)">Alert?</span></div>
+        <div>&nbsp;&nbsp;&boxvr;&nbsp;KPI Engine &rarr; <span style="color:var(--accent2)">Live Dashboard</span></div>
+        <div>&nbsp;&nbsp;&boxvr;&nbsp;APScheduler &rarr; Shift/Monthly Summaries</div>
+        <div>&nbsp;&nbsp;&boxur;&nbsp;MCP Server &rarr; <span style="color:var(--gold)">Claude AI Agent</span></div>
+        <div style="margin-top:12px;color:var(--accent);font-weight:600">// Scale</div>
+        <div><span style="color:var(--text)">500</span> employees tracked</div>
+        <div><span style="color:var(--text)">10</span> industrial machines</div>
+        <div><span style="color:var(--text)">5400+</span> production logs</div>
+        <div><span style="color:var(--text)">3</span> shifts &times; real-time monitoring</div>
+        <div><span style="color:var(--text)">11</span> engineered ML features</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">03 / 14</div>
+</div>
+
+<!-- SLIDE 4: ANOMALY DETECTION -->
+<div class="slide" id="s4">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--red);bottom:-200px;right:-100px"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-red">Feature #1</span></div>
+    <h2 class="appear" style="margin-top:20px">Real-Time <span style="color:var(--red)">Anomaly Detection</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.05rem;margin-top:12px;max-width:600px;line-height:1.7">
+      Every production log is screened by an Isolation Forest model the instant it's created. No batch jobs. No delays. Instant detection.
+    </p>
+    <div class="grid-2 appear">
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <h3 style="font-size:.9rem;color:var(--red);margin-bottom:16px">11 ENGINEERED FEATURES</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.82rem;font-family:'JetBrains Mono',monospace">
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">duration_ratio</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">machine_z_score</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">emp_deviation</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">duration_abs_dev</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">machine_rendement</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">machine_pannes</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">machine_age</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">emp_std_ratio</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">emp_task_count</div>
+            <div style="padding:8px 12px;background:rgba(255,71,87,.06);border-radius:8px">task_duration_min</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:.9rem;color:var(--accent2);margin-bottom:12px">WHY ISOLATION FOREST?</h3>
+          <ul style="list-style:none;font-size:.9rem;color:var(--muted);line-height:2">
+            <li>&#x2713;&nbsp; Unsupervised &mdash; no labeled anomaly data needed</li>
+            <li>&#x2713;&nbsp; Handles high-dimensional feature space</li>
+            <li>&#x2713;&nbsp; Sub-millisecond inference per log</li>
+            <li>&#x2713;&nbsp; Confidence scoring for triage priority</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;text-align:center;background:linear-gradient(135deg,rgba(255,71,87,.05),rgba(255,71,87,.02))">
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">Detection Pipeline</div>
+        <div style="background:var(--bg);border-radius:12px;padding:20px;margin:8px 0;border:1px solid var(--border)">
+          <div style="font-weight:600">New Production Log</div>
+          <div style="font-size:.8rem;color:var(--muted)">POST /production-logs</div>
+        </div>
+        <div class="flow-line"></div>
+        <div style="background:var(--bg);border-radius:12px;padding:20px;margin:8px 0;border:1px solid rgba(255,71,87,.3)">
+          <div style="font-weight:600;color:var(--red)">Feature Engineering</div>
+          <div style="font-size:.8rem;color:var(--muted)">Z-scores, ratios, deviations</div>
+        </div>
+        <div class="flow-line"></div>
+        <div style="background:var(--bg);border-radius:12px;padding:20px;margin:8px 0;border:1px solid rgba(255,71,87,.3)">
+          <div style="font-weight:600;color:var(--red)">Isolation Forest</div>
+          <div style="font-size:.8rem;color:var(--muted)">Anomaly score + confidence</div>
+        </div>
+        <div class="flow-line"></div>
+        <div style="background:var(--bg);border-radius:12px;padding:20px;margin:8px 0;border:1px solid rgba(46,213,115,.3)">
+          <div style="font-weight:600;color:var(--green)">Alert Created</div>
+          <div style="font-size:.8rem;color:var(--muted)">Triage: Nouvelle &rarr; Vue &rarr; Trait&eacute;e</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">04 / 14</div>
+</div>
+
+<!-- SLIDE 5: FATIGUE & PREDICTION -->
+<div class="slide" id="s5">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--accent3);top:-100px;left:-100px"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-accent">Feature #2</span></div>
+    <h2 class="appear" style="margin-top:20px">Predictive <span class="gradient-text-warm">Fatigue &amp; Rendement</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.05rem;margin-top:12px;max-width:600px;line-height:1.7">
+      A multi-factor psychosocial scoring system that goes beyond production metrics &mdash; modeling the human behind the badge.
+    </p>
+    <div class="grid-2 appear">
+      <div class="card">
+        <h3 style="font-size:.9rem;color:var(--accent3);margin-bottom:20px">FATIGUE SCORING MODEL (0&ndash;100)</h3>
+        <table style="width:100%;font-size:.85rem;border-collapse:collapse">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Night shift</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--red)">+30 pts</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Age &gt; 50</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--red)">+20 pts</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Seniority &gt; 20 years</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--accent3)">+15 pts</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Absences &gt; 30h/month</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--accent3)">+15 pts</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Duration ratio &gt; 1.5&times;</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--red)">+20 pts</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--muted)">Children &ge; 3</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--gold)">+10 pts</td></tr>
+          <tr><td style="padding:10px 0;color:var(--muted)">Late &gt; 10&times;/month</td><td style="padding:10px 0;text-align:right;font-weight:700;color:var(--gold)">+10 pts</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <h3 style="font-size:.9rem;color:var(--accent2);margin-bottom:16px">SEVERITY LEVELS</h3>
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px"><span>Critique</span><span style="color:var(--red)">&#x2265; 70</span></div>
+            <div class="metric-bar"><div class="metric-bar-fill" style="width:95%;background:linear-gradient(90deg,var(--red),#ff6b81)"></div></div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px"><span>&Eacute;lev&eacute;</span><span style="color:var(--accent3)">&#x2265; 50</span></div>
+            <div class="metric-bar"><div class="metric-bar-fill" style="width:70%;background:linear-gradient(90deg,var(--accent3),#fab1d0)"></div></div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px"><span>Moyen</span><span style="color:var(--gold)">&#x2265; 30</span></div>
+            <div class="metric-bar"><div class="metric-bar-fill" style="width:45%;background:linear-gradient(90deg,var(--gold),#ffe66d)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px"><span>Faible</span><span style="color:var(--green)">&lt; 30</span></div>
+            <div class="metric-bar"><div class="metric-bar-fill" style="width:20%;background:linear-gradient(90deg,var(--green),#7bed9f)"></div></div>
+          </div>
+        </div>
+        <div class="card" style="text-align:center;background:linear-gradient(135deg,rgba(253,121,168,.08),rgba(255,215,0,.08))">
+          <div class="stat-sm gradient-text-warm">3&times; / day</div>
+          <div class="label">Automated shift summaries with fatigue analysis</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:8px">06:05 &bull; 14:05 &bull; 22:05</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">05 / 14</div>
+</div>
+
+<!-- SLIDE 6: DISPATCHING -->
+<div class="slide" id="s6">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--accent2);top:50%;right:-150px;transform:translateY(-50%)"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-green">Feature #3</span></div>
+    <h2 class="appear" style="margin-top:20px">Dispatching <span style="color:var(--accent2)">Optimization</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.05rem;margin-top:12px;max-width:600px;line-height:1.7">
+      The Hungarian algorithm solves the optimal assignment problem: which employee should work on which product for each machine to minimize total production time.
+    </p>
+    <div class="grid-2 appear">
+      <div class="card">
+        <h3 style="font-size:.9rem;color:var(--accent2);margin-bottom:16px">HOW IT WORKS</h3>
+        <div class="timeline-item">
+          <div><div style="font-weight:600;font-size:.9rem">Historical Analysis</div><div style="font-size:.82rem;color:var(--muted);margin-top:4px">Query avg task duration per (employee, machine, product) &mdash; excluding anomalous logs</div></div>
+        </div>
+        <div class="timeline-item">
+          <div><div style="font-weight:600;font-size:.9rem">Cost Matrix</div><div style="font-size:.82rem;color:var(--muted);margin-top:4px">Build NxN cost matrix where cost[i][j] = expected time for employee i on product j</div></div>
+        </div>
+        <div class="timeline-item">
+          <div><div style="font-weight:600;font-size:.9rem">Hungarian Algorithm</div><div style="font-size:.82rem;color:var(--muted);margin-top:4px">scipy.optimize.linear_sum_assignment finds global optimum in O(n&sup3;)</div></div>
+        </div>
+        <div class="timeline-item" style="border-left-color:var(--green)">
+          <div><div style="font-weight:600;font-size:.9rem;color:var(--green)">Optimal Assignments</div><div style="font-size:.82rem;color:var(--muted);margin-top:4px">Compare actual vs. optimal &mdash; quantify exact improvement potential</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="text-align:center;margin-bottom:20px;background:linear-gradient(135deg,rgba(0,206,201,.08),rgba(46,213,115,.08))">
+          <div class="stat" style="color:var(--accent2)">25%</div>
+          <div class="label" style="font-size:1rem">Efficiency gains from optimal assignment</div>
+        </div>
+        <div class="grid-2" style="margin-top:0;gap:16px">
+          <div class="card" style="text-align:center;padding:24px 16px">
+            <div class="stat-sm" style="color:var(--green)">3.5h</div>
+            <div class="label">Saved daily</div>
+          </div>
+          <div class="card" style="text-align:center;padding:24px 16px">
+            <div class="stat-sm" style="color:var(--gold)">$250K</div>
+            <div class="label">Saved annually</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3 style="font-size:.85rem;color:var(--gold);margin-bottom:10px">WORST-CASE DETECTION</h3>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Window function ranks employees per machine-product pair by performance &mdash; instantly surfaces the slowest assignments happening right now.</p>
+        </div>
+      </div>
+    </div>
+    <div class="appear source">Efficiency estimates based on operations research literature for optimal assignment problems in manufacturing</div>
+  </div>
+  <div class="slide-num">06 / 14</div>
+</div>
+
+<!-- SLIDE 7: AI ASSISTANT -->
+<div class="slide" id="s7">
+  <div class="glow-orb" style="width:600px;height:600px;background:var(--gold);top:-200px;left:30%"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-accent">Feature #4</span></div>
+    <h2 class="appear" style="margin-top:20px">AI Conversational <span class="gradient-text">Assistant</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.05rem;margin-top:12px;max-width:650px;line-height:1.7">
+      Powered by Claude via Model Context Protocol (MCP). The AI autonomously decides which factory tools to call, retrieves live data, and generates insights with embedded charts.
+    </p>
+    <div class="grid-2 appear">
+      <div class="card" style="background:linear-gradient(135deg,rgba(108,92,231,.06),rgba(0,206,201,.06))">
+        <h3 style="font-size:.9rem;color:var(--accent);margin-bottom:16px">MCP TOOL ARCHITECTURE</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>
+            <div><div style="font-size:.82rem;font-weight:600">get_kpi_summary</div><div style="font-size:.72rem;color:var(--muted)">Full factory dashboard data</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2)"></div>
+            <div><div style="font-size:.82rem;font-weight:600">get_dispatching_hungarian</div><div style="font-size:.72rem;color:var(--muted)">Optimal worker assignments</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--accent3)"></div>
+            <div><div style="font-size:.82rem;font-weight:600">get_rendement_par_employe</div><div style="font-size:.72rem;color:var(--muted)">Per-employee yield rankings</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>
+            <div><div style="font-size:.82rem;font-weight:600">get_employees</div><div style="font-size:.72rem;color:var(--muted)">Workforce data &amp; profiles</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+            <div><div style="font-size:.82rem;font-weight:600">get_duree_moyenne_taches</div><div style="font-size:.72rem;color:var(--muted)">Task duration analytics</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <h3 style="font-size:.9rem;color:var(--gold);margin-bottom:12px">THE AGENTIC LOOP</h3>
+          <div style="font-size:.85rem;color:var(--muted);line-height:1.8">
+            <div>1. Manager asks a question in plain French/English</div>
+            <div>2. Claude analyzes intent &amp; selects MCP tools</div>
+            <div>3. Tools call live FastAPI endpoints</div>
+            <div>4. Results fed back to Claude</div>
+            <div>5. Claude generates markdown + chart specs</div>
+            <div>6. Frontend renders interactive Recharts</div>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:0;gap:12px">
+          <div class="card" style="text-align:center;padding:20px">
+            <div class="stat-sm gradient-text">SSE</div>
+            <div class="label">Real-time token streaming</div>
+          </div>
+          <div class="card" style="text-align:center;padding:20px">
+            <div class="stat-sm gradient-text-warm">PDF</div>
+            <div class="label">One-click report generation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">07 / 14</div>
+</div>
+
+<!-- SLIDE 8: CHAT TO PDF -->
+<div class="slide" id="s8">
+  <div class="glow-orb" style="width:400px;height:400px;background:var(--accent);bottom:-100px;left:20%"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear"><span class="tag tag-accent">Feature #5</span></div>
+    <h2 class="appear" style="margin-top:20px">Chat &rarr; Charts &rarr; <span class="gradient-text">PDF Report</span></h2>
+    <p class="appear" style="color:var(--muted);font-size:1.05rem;margin-top:16px;max-width:700px;margin-left:auto;margin-right:auto;line-height:1.7">
+      The same AI response renders as interactive Recharts in the browser <strong>and</strong> as matplotlib charts in a branded PDF. One question, two outputs.
+    </p>
+    <div class="grid-3 appear" style="margin-top:40px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:12px">&#x1F4AC;</div>
+        <div style="font-weight:700">Ask</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.5">"Show me rendement trends by shift for the last 3 months"</p>
+      </div>
+      <div class="card" style="text-align:center;border-color:var(--accent)">
+        <div style="font-size:2.5rem;margin-bottom:12px">&#x1F4CA;</div>
+        <div style="font-weight:700">Visualize</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.5">Interactive charts render inline in the chat as tokens stream</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:12px">&#x1F4C4;</div>
+        <div style="font-weight:700">Export</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.5">Branded PRISTINI PDF with matplotlib charts &amp; formatted tables</p>
+      </div>
+    </div>
+    <div class="appear" style="margin-top:40px">
+      <div class="card" style="display:inline-block;padding:20px 40px;background:linear-gradient(135deg,rgba(108,92,231,.1),rgba(0,206,201,.1));border-color:var(--accent)">
+        <span style="font-size:2rem;font-weight:800;color:var(--text)">2 hours</span>
+        <span style="font-size:1.5rem;color:var(--muted);margin:0 16px">&rarr;</span>
+        <span style="font-size:2rem;font-weight:800;color:var(--green)">10 seconds</span>
+        <div class="label" style="margin-top:8px">Analysis time reduction with AI assistant</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">08 / 14</div>
+</div>
+
+<!-- SLIDE 9: DASHBOARD -->
+<div class="slide" id="s9">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--accent);top:-100px;right:-100px"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-accent">The Dashboard</span></div>
+    <h2 class="appear" style="margin-top:20px">8 Pages. <span class="gradient-text">One Source of Truth.</span></h2>
+    <div class="grid-4 appear" style="margin-top:30px">
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F3E0;</div>
+        <div style="font-weight:700;font-size:.85rem">Dashboard</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">KPIs, trends, production charts</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F465;</div>
+        <div style="font-weight:700;font-size:.85rem">Employees</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">500 workers, CRUD, profiles</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x2699;</div>
+        <div style="font-weight:700;font-size:.85rem">Machines</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">10 machines, logs drill-down</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F4CB;</div>
+        <div style="font-weight:700;font-size:.85rem">Logs</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Full production log history</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px;border-color:rgba(255,71,87,.3)">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F6A8;</div>
+        <div style="font-weight:700;font-size:.85rem">Alerts</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Real-time anomaly triage</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F4CA;</div>
+        <div style="font-weight:700;font-size:.85rem">Summaries</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Shift + monthly reports</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px;border-color:rgba(108,92,231,.3)">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F916;</div>
+        <div style="font-weight:700;font-size:.85rem">AI Chat</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Streaming + inline charts</div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:1.5rem;margin-bottom:8px">&#x1F4A1;</div>
+        <div style="font-weight:700;font-size:.85rem">Recommendations</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">AI optimization suggestions</div>
+      </div>
+    </div>
+    <div class="grid-3 appear" style="margin-top:30px">
+      <div class="card" style="text-align:center;padding:20px">
+        <div class="stat-sm" style="color:var(--accent)">30s</div>
+        <div class="label">Alert polling interval</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div class="stat-sm" style="color:var(--accent2)">60s</div>
+        <div class="label">KPI refresh cycle</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div class="stat-sm" style="color:var(--accent3)">5min</div>
+        <div class="label">Summary sync interval</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">09 / 14</div>
+</div>
+
+<!-- SLIDE 10: BEFORE vs AFTER -->
+<div class="slide" id="s10">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--green);bottom:-150px;right:-100px"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-green">Transformation</span></div>
+    <h2 class="appear" style="margin-top:20px">Before vs. <span style="color:var(--green)">After PRISTINI</span></h2>
+    <table class="comparison-table appear" style="margin-top:30px">
+      <thead>
+        <tr><th style="width:30%">Dimension</th><th style="width:35%;color:var(--red)">&#x2718; Before</th><th style="width:35%;color:var(--green)">&#x2714; After PRISTINI</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="font-weight:600">Anomaly Detection</td><td style="color:var(--muted)">Found days later in quality audits</td><td style="color:var(--green)">Instant &mdash; every log screened by ML</td></tr>
+        <tr><td style="font-weight:600">Workforce Planning</td><td style="color:var(--muted)">Spreadsheets &amp; gut feeling</td><td style="color:var(--green)">Hungarian algorithm optimization</td></tr>
+        <tr><td style="font-weight:600">Fatigue Monitoring</td><td style="color:var(--muted)">Non-existent</td><td style="color:var(--green)">Psychosocial model, 4 severity levels</td></tr>
+        <tr><td style="font-weight:600">Analysis Time</td><td style="color:var(--muted)">2+ hours manual reports</td><td style="color:var(--green)">10 seconds with AI assistant</td></tr>
+        <tr><td style="font-weight:600">Report Generation</td><td style="color:var(--muted)">Manual Word/Excel</td><td style="color:var(--green)">One-click branded PDF with charts</td></tr>
+        <tr><td style="font-weight:600">Shift Handover</td><td style="color:var(--muted)">Verbal, incomplete</td><td style="color:var(--green)">Automated 3&times;/day summaries</td></tr>
+        <tr><td style="font-weight:600">Decision Making</td><td style="color:var(--muted)">Reactive</td><td style="color:var(--green)">Predictive &amp; data-driven</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="slide-num">10 / 14</div>
+</div>
+
+<!-- SLIDE 11: IMPACT -->
+<div class="slide" id="s11">
+  <div class="glow-orb" style="width:600px;height:600px;background:var(--gold);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear"><span class="tag tag-green">Impact</span></div>
+    <h2 class="appear" style="margin-top:20px;font-size:3.2rem">The <span class="gradient-text-warm">Bottom Line</span></h2>
+    <div class="grid-4 appear" style="margin-top:50px">
+      <div class="card" style="text-align:center;padding:36px 20px;background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,215,0,.02))">
+        <div class="stat" style="color:var(--gold);font-size:2.8rem">$800K</div>
+        <div class="label" style="font-size:.9rem">Recovered annually</div>
+        <div class="divider" style="margin:12px auto"></div>
+        <div style="font-size:.78rem;color:var(--muted)">Waste, rework, downtime elimination</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 20px;background:linear-gradient(135deg,rgba(46,213,115,.06),rgba(46,213,115,.02))">
+        <div class="stat" style="color:var(--green);font-size:2.8rem">80%</div>
+        <div class="label" style="font-size:.9rem">Less manual analysis</div>
+        <div class="divider" style="margin:12px auto"></div>
+        <div style="font-size:.78rem;color:var(--muted)">AI replaces hours of spreadsheet work</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 20px;background:linear-gradient(135deg,rgba(108,92,231,.06),rgba(108,92,231,.02))">
+        <div class="stat" style="color:var(--accent);font-size:2.8rem">30%</div>
+        <div class="label" style="font-size:.9rem">Efficiency improvement</div>
+        <div class="divider" style="margin:12px auto"></div>
+        <div style="font-size:.78rem;color:var(--muted)">From optimized dispatching &amp; early detection</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 20px;background:linear-gradient(135deg,rgba(253,121,168,.06),rgba(253,121,168,.02))">
+        <div class="stat" style="color:var(--accent3);font-size:2.8rem">0</div>
+        <div class="label" style="font-size:.9rem">Missed anomalies</div>
+        <div class="divider" style="margin:12px auto"></div>
+        <div style="font-size:.78rem;color:var(--muted)">100% of logs screened in real-time</div>
+      </div>
+    </div>
+    <div class="appear" style="margin-top:40px">
+      <div class="card" style="display:inline-block;padding:16px 32px;border-color:var(--gold)">
+        <span style="font-size:.9rem;color:var(--muted)">Built for</span>
+        <span style="font-size:1.1rem;font-weight:700;color:var(--gold);margin-left:8px">Tunisia&rsquo;s 1,600 Textile SMEs</span>
+        <span style="font-size:.9rem;color:var(--muted);margin-left:8px">&mdash; affordable, accessible, production-ready</span>
+      </div>
+    </div>
+    <div class="appear source" style="text-align:center">Sources: FIPA Tunisia &bull; Kohan Textile Journal &bull; World Bank &ldquo;The Unfinished Revolution&rdquo;</div>
+  </div>
+  <div class="slide-num">11 / 14</div>
+</div>
+
+<!-- SLIDE 12: WHY WE WIN -->
+<div class="slide" id="s12">
+  <div class="glow-orb" style="width:500px;height:500px;background:var(--accent);top:-100px;left:-100px"></div>
+  <div class="slide-inner">
+    <div class="appear"><span class="tag tag-accent">Differentiators</span></div>
+    <h2 class="appear" style="margin-top:20px">Why PRISTINI <span class="gradient-text">Wins</span></h2>
+    <div class="grid-2 appear" style="margin-top:30px">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(108,92,231,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent)">1</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">MCP Architecture</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">Cutting-edge Model Context Protocol &mdash; the AI agent autonomously queries live factory data. Not a chatbot wrapper; a real agent.</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(0,206,201,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent2)">2</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">Human-Centric Fatigue Model</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">Goes beyond production metrics. Models age, family, shifts, attendance &mdash; the human behind the data.</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(253,121,168,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent3)">3</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">Operations Research + ML</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">Combines Isolation Forest anomaly detection with Hungarian algorithm optimization. Two mathematical pillars.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(255,215,0,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--gold)">4</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">Dual LLM Provider</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">Seamless switch between Anthropic API and AWS Bedrock. Enterprise-ready from day one.</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(46,213,115,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--green)">5</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">Chat &rarr; Chart &rarr; PDF Pipeline</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">Same AI output renders as interactive Recharts AND as matplotlib in branded PDFs. Unique dual-rendering.</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start">
+          <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(255,71,87,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--red)">6</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem">Zero-Delay Detection</div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5">ML inference on every single POST. Not batch. Not scheduled. Instant anomaly screening on insertion.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">12 / 14</div>
+</div>
+
+<!-- SLIDE 13: LIVE DEMO SLIDE -->
+<div class="slide" id="s13">
+  <div class="glow-orb" style="width:700px;height:700px;background:var(--accent);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear">
+      <div style="font-size:5rem;margin-bottom:20px">&#x1F3AC;</div>
+    </div>
+    <h1 class="appear gradient-text" style="font-size:4rem">Live Demo</h1>
+    <p class="appear" style="color:var(--muted);font-size:1.2rem;margin-top:16px;max-width:500px;margin-left:auto;margin-right:auto">
+      Let's see PRISTINI in action.
+    </p>
+    <div class="grid-3 appear" style="margin-top:40px;max-width:700px;margin-left:auto;margin-right:auto">
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:.85rem;font-weight:600">Dashboard &amp; KPIs</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Real-time factory overview</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;border-color:var(--red)">
+        <div style="font-size:.85rem;font-weight:600;color:var(--red)">Anomaly Alert</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Trigger &amp; triage an alert</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;border-color:var(--accent)">
+        <div style="font-size:.85rem;font-weight:600;color:var(--accent)">AI Chat + PDF</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Ask &rarr; Charts &rarr; Export</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 14</div>
+</div>
+
+<!-- SLIDE 14: CLOSING -->
+<div class="slide" id="s14">
+  <div class="glow-orb" style="width:600px;height:600px;background:var(--accent);top:-200px;right:-100px"></div>
+  <div class="glow-orb" style="width:400px;height:400px;background:var(--accent2);bottom:-100px;left:-50px"></div>
+  <div class="glow-orb" style="width:300px;height:300px;background:var(--accent3);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-inner" style="text-align:center">
+    <div class="appear">
+      <div class="tag tag-accent" style="margin-bottom:24px">THANK YOU</div>
+    </div>
+    <h1 class="appear" style="font-size:4.5rem;margin-bottom:16px">
+      <span class="gradient-text">PRISTINI</span>
+    </h1>
+    <p class="appear" style="font-size:1.3rem;color:var(--muted);margin-bottom:40px">
+      Making factories think for themselves.
+    </p>
+    <div class="divider appear" style="margin:0 auto 30px"></div>
+    <div class="appear" style="display:flex;gap:30px;justify-content:center;margin-bottom:40px">
+      <div style="text-align:center">
+        <div class="stat-sm gradient-text">4</div>
+        <div class="label">AI-powered modules</div>
+      </div>
+      <div style="text-align:center">
+        <div class="stat-sm gradient-text-warm">$800K</div>
+        <div class="label">Annual value</div>
+      </div>
+      <div style="text-align:center">
+        <div class="stat-sm" style="color:var(--green)">10s</div>
+        <div class="label">Time to insight</div>
+      </div>
+    </div>
+    <div class="appear" style="margin-top:20px">
+      <div class="team-badge" style="font-size:1rem;padding:12px 28px 12px 12px">
+        <div class="avatar" style="width:36px;height:36px"></div>
+        Hayder Tastouri
+      </div>
+    </div>
+    <p class="appear" style="color:var(--muted);font-size:.9rem;margin-top:30px">
+      Questions? Let's discuss.
+    </p>
+  </div>
+  <div class="slide-num">14 / 14</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const slides=document.querySelectorAll('.slide');
+  const dotsC=document.getElementById('navDots');
+  slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot';d.onclick=()=>slides[i].scrollIntoView({behavior:'smooth'});dotsC.appendChild(d)});
+  const dots=dotsC.querySelectorAll('.dot');
+  let current=0;
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){current=[...slides].indexOf(e.target);dots.forEach((d,j)=>d.classList.toggle('active',j===current));e.target.querySelectorAll('.appear').forEach((el,j)=>setTimeout(()=>el.classList.add('visible'),j*120))}})},{threshold:.5});
+  slides.forEach(s=>obs.observe(s));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();if(current<slides.length-1)slides[current+1].scrollIntoView({behavior:'smooth'})}
+    if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();if(current>0)slides[current-1].scrollIntoView({behavior:'smooth'})}
+  });
+});
+</script>
+</body>
+</html>
